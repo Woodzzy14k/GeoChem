@@ -1,0 +1,185 @@
+---
+title: "GeoChem Final Project"
+author: "Alex Wood"
+date: "May 1, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+```
+
+#bring in Beisner et.al data from USGS repository
+```{r}
+gcData <- read_csv(here::here("gcData.csv"), 
+                   col_types = cols(`Alpha_ radioactivity_( picocuries/liter)` = col_double(), 
+                                    `Aluminum_(ug/L)` = col_double(), 
+                                    `Antimony_(ug/L)` = col_double(), 
+                                    `Barium_(ug/L)` = col_double(), `Beryllium_(ug/L)` = col_double(), 
+                                    `Bicarbonate_(ug/L)` = col_double(), 
+                                    `Boron_(ug/L)` = col_double(), `Cadmium_(ug/L)` = col_double(), 
+                                    `Chromium_(ug/L)` = col_double(), 
+                                    `Cobalt_(ug/L)` = col_double(), `Copper_(ug/L)` = col_double(), 
+                                    `DO_m/L` = col_double(), Date = col_character(), 
+                                    `Fluoride_(ug/L)` = col_double(), 
+                                    `Iron_(ug/L)` = col_double(), `Lead_(ug/L)` = col_double(), 
+                                    `Manganese_(ug/L)` = col_double(), 
+                                    `Molybdenum_(ug/L)` = col_double(), 
+                                    `Nickel_(ug/L)` = col_double(), `P_(mmHg)` = col_double(), 
+                                    `Q _(gpm)` = col_double(), `Radium-226_(picocuries/liter)` = col_double(), 
+                                    `Radium-228_(picocuries/liter)` = col_double(), 
+                                    `SC_uS/cm` = col_double(), `Selenium_(ug/L)` = col_double(), 
+                                    `Strontium_(ug/L)` = col_double(), 
+                                    `Thallium_(ug/L)` = col_double(), 
+                                    `Uranium-235_(picocuries/liter)` = col_double(), 
+                                    `Vanadium_(ug/L)` = col_double(), 
+                                    X55 = col_skip(), `Zinc_(ug/L)` = col_double(), 
+                                    `beta_radioactivity_(picocuries/liter)` = col_double(), 
+                                    ph = col_double()))
+#convert to data.frame
+gcData=as.data.frame(gcData)
+#fix dates
+gcData$Date=as.Date(gcData$Date, "%m/%d/%Y")
+
+```
+#make into matrix
+```{r}
+geoMatrix=matrix(as.numeric(unlist(gcData)), nrow=nrow(gcData))
+
+
+
+
+# replace all non-finite values with 0
+geoMatrix[!rowSums(!is.finite(geoMatrix)),]
+geoMatrix[!is.finite(geoMatrix)] <- 0
+#check
+is.na(geoMatrix)
+
+```
+#PCA
+```{r}
+#Now we want to calculate the covariance matrix. First need to make a new version of this matrix such that each column has Center the data so that the mean of each column is 0 scale() is a useful function to do this, but check afterward to make sure you'be done it right
+
+#subract that mean and center it on 0
+x=scale(geoMatrix, center=TRUE, scale=TRUE)
+
+x[!rowSums(!is.finite(x)),]
+x[!is.finite(x)] <- 0
+
+#scale false?
+x2=scale(geoMatrix, scale=FALSE)
+
+
+
+
+# 1e. OK - now use linear algebra to calculate your covariance matrix. Are the values consistent with the plots in 1a?
+
+#covariance matrix
+coGeo=(t(x)%*%x/(nrow(x)-1))
+head(coGeo)
+
+#correlation is standard covariance!
+head(cor(geoMatrix))
+
+
+# 1f. Now we want to try to find a matrix ("P") (our EOFs) that we can multiply by our original matrix to turn it into orthogonal indices (our PCs).
+
+# To do so, use svd() on your covariance matrix.
+is.na(coGeo)
+
+
+
+
+out=svd(coGeo)
+
+names(out)
+
+save4l8er=diag(out$d)
+
+sum(save4l8er)
+
+print(save4l8er)
+
+#project data onto new axes
+PCs=(x%*%out$v)
+#14 of them
+dim(PCs)
+cov(PCs)
+
+
+#total covariance
+sum(out$d)
+#52 because it is normalized
+
+#how much of each dataset variability is represented by each PC
+fracVariance=out$d/sum(out$d)
+fracVariance
+dim(fracVariance)
+
+#  [1] 2.185389e-01 1.210248e-01 9.442026e-02 8.642594e-02 5.462262e-02 5.053003e-02 4.458022e-02
+#  [8] 3.637762e-02 3.376052e-02 3.168021e-02 2.779995e-02 2.587641e-02 2.346267e-02 2.147082e-02
+# [15] 1.573099e-02 1.456376e-02 1.325574e-02 1.244764e-02 1.159180e-02 9.215402e-03 8.147891e-03
+# [22] 6.311981e-03 6.020716e-03 5.221609e-03 4.598633e-03 3.907593e-03 3.340994e-03 2.996832e-03
+# [29] 2.143220e-03 1.994655e-03 1.833100e-03 1.236169e-03 1.176023e-03 8.146119e-04 7.659121e-04
+# [36] 6.018387e-04 4.972413e-04 3.651498e-04 2.448174e-04 1.140710e-04 9.983038e-05 6.026109e-05
+# [43] 5.124329e-05 2.444512e-05 1.929359e-05 1.447626e-05 1.035957e-05 5.336688e-06 4.715681e-06
+# [50] 4.338049e-07 2.125958e-07 4.107010e-08 1.439596e-17 1.439596e-17
+
+
+#save for later one
+sum(save4l8er)
+out$d/sum(out$d)
+
+```
+```{r}
+x1=c(1:54)
+
+x1
+
+ggplot()+geom_point(aes(x=x1, y=fracVariance))+ggtitle("Fraction of Variance in Each PCA")+xlab("PCA")+ylab("Percent Variance")
+
+
+```
+```{r}
+
+#data frame with the original data, and PCs
+df = cbind(as.data.frame(PCs),iris[1:nrow(x),]) 
+
+#and eigenvectors with names
+df2 = cbind(as.data.frame(out$v),names(gcData[,-c(1:5)])) 
+df2
+
+names(df2)[5]="names"
+
+
+#lets setup the length of our arrows as a variable
+arrowScale=5
+
+#as a data.frame, it converts them to v1, v2 and v3, etc.. 
+
+#and make an awesome plot, we're going to compare PC1 and PC2
+
+iris$Species
+
+ggplot(df, aes(x = V1, y= V2))+geom_point(aes(colour=Species),size=6)+
+  #first just plotting points and colouring them by the cut
+  
+  geom_hline(yintercept=0)+geom_vline(xintercept=0)+
+  
+  #then we'll plot some 0 lines for our reference
+  coord_fixed(xlim=c(-5,5),ylim=c(-5,5))+
+  
+  #and set the scale
+  geom_segment(data=df2,aes(x=0,y=0,xend = V1*arrowScale, yend = V2*arrowScale))+
+  
+  #Now we'll add lines that correspond to our eigen vectors
+  geom_text(data=df2,aes(x = V1*arrowScale, y = V2*arrowScale,label=names))
+  #and label those lines
+```
+
+
+
+
+
