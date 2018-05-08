@@ -1,0 +1,275 @@
+---
+title: "Saturated"
+author: "Alex Wood"
+date: "May 7, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#loadings
+```{r}
+library(tidyverse)
+library(ggplot2)
+```
+
+
+#read it in
+
+```{r}
+saturation <- read_csv(here::here("saturation.csv"), 
+    col_types = cols(Date = col_date(format = "%m/%d/%Y")))
+saturation=as.data.frame(saturation)
+
+satSave=saturation
+```
+
+#whittle it down!
+```{r}
+#remove characters
+saturation=saturation[,-1]
+saturation=saturation[,-1]
+saturation=saturation[,-1]
+
+#make into matrix
+satMatrix=matrix(as.numeric(unlist(saturation)), nrow=nrow(saturation))
+
+satMatrix[!rowSums(!is.finite(satMatrix)),]
+satMatrix[!is.finite(satMatrix)] <- 0
+```
+#PCA
+```{r}
+x1=scale(satMatrix, center=TRUE, scale=TRUE)
+
+x1[!rowSums(!is.finite(x1)),]
+x1[!is.finite(x1)] <- 0
+
+
+
+# 1e. OK - now use linear algebra to calculate your covariance matrix. Are the values consistent with the plots in 1a?
+
+#covariance matrix
+coSat=(t(x1)%*%x1/(nrow(x1)-1))
+head(coSat)
+
+#correlation is standard covariance!
+head(cor(satMatrix))
+
+
+# 1f. Now we want to try to find a matrix ("P") (our EOFs) that we can multiply by our original matrix to turn it into orthogonal indices (our PCs).
+
+# To do so, use svd() on your covariance matrix.
+
+
+
+
+
+out2=svd(coSat)
+
+names(out2)
+
+save4l8er2=diag(out2$d)
+
+sum(save4l8er2)
+#27.44
+
+print(save4l8er2)
+
+#project data onto new axes
+PCs2=(x1%*%out2$v)
+#14 of them
+dim(PCs2)
+cov(PCs2)
+
+
+#total covariance
+sum(out2$d)
+#28 because it is normalized
+
+#how much of each dataset variability is represented by each PC
+fracVariance2=out2$d/sum(out2$d)
+fracVariance2
+dim(fracVariance2)
+
+
+#  [1] 6.295077e-01 1.818268e-01 5.898637e-02 4.493986e-02 2.900585e-02 1.819260e-02 1.288067e-02
+#  [8] 9.455680e-03 7.329617e-03 3.446042e-03 2.109750e-03 1.615828e-03 4.188065e-04 2.129052e-04
+# [15] 3.461621e-05 3.350939e-05 1.188843e-06 7.002542e-07 4.157476e-07 2.680049e-07 2.044042e-07
+# [22] 1.790936e-07 1.377624e-07 1.288836e-07 9.279272e-08 4.496125e-08 1.726079e-08 6.605311e-09
+
+#save for later one
+sum(save4l8er2)
+#28
+out2$d/sum(out2$d)
+
+```
+```{r}
+#make x the same as pcas...there is 50 of them!
+x2=c(1:28)
+
+
+ggplot()+geom_point(aes(x=x2, y=fracVariance2))+ggtitle("Fraction of Variance in Each PCA")+xlab("PCA")+ylab("Percent Variance")
+
+```
+#the good stuff
+```{r}
+head(gcData)
+
+saturation=saturation[-51,]
+
+x2
+x
+#data frame with the original data, and PCs
+df2 = cbind(as.data.frame(PCs2),saturation[1:nrow(x1),]) 
+df2=cbind(df2, satSave$Formation)
+df2
+
+dim(df2)
+#51 by 57
+
+#renamed unit
+colnames(df2)[colnames(df2)=="satSave$Formation"] <- "Unit"
+
+
+#and eigenvectors with names
+
+df3 = cbind(as.data.frame(out2$v),names(saturation))
+df3
+dim(df3)
+
+
+colnames(df3)[colnames(df3)=="names(saturation)"] <- "names"
+
+
+#as a data.frame, it converts them to v1, v2 and v3, etc.. 
+
+#and make an awesome plot, we're going to compare PC1 and PC2
+
+
+
+ggplot(df2, aes(x = V1, y= V2))+geom_point(aes(colour=Unit),size=6)+
+  #first just plotting points and colouring them by the cut
+  
+  geom_hline(yintercept=0)+geom_vline(xintercept=0)+
+  
+  #then we'll plot some 0 lines for our reference
+  coord_fixed(xlim=c(-3,3),ylim=c(-2,3))+
+  
+  #and set the scale
+  geom_segment(data=df3,aes(x=0,y=0,xend = V1*arrowScale, yend = V2*arrowScale))+
+  
+  #Now we'll add lines that correspond to our eigen vectors
+  geom_text(data=df3,aes(x = V1*arrowScale, y = V2*arrowScale,label=names))
+  #and label those lines
+
+plot2=ggplot(df2, aes(x = V1, y= V2))+geom_point(aes(colour=Unit),size=6)+
+  #first just plotting points and colouring them by the cut
+  
+  geom_hline(yintercept=0)+geom_vline(xintercept=0)+
+  
+  #then we'll plot some 0 lines for our reference
+  coord_fixed(xlim=c(-3,3),ylim=c(-2,3))+
+  
+  #and set the scale
+  geom_segment(data=df3,aes(x=0,y=0,xend = V1*arrowScale, yend = V2*arrowScale))+
+  
+  #Now we'll add lines that correspond to our eigen vectors
+  geom_text(data=df3,aes(x = V1*arrowScale, y = V2*arrowScale,label=names))
+  #and label those lines
+
+
+ggsave("plot3.jpg", width = 15, height = 15, units = "in")
+
+```
+
+#plot it all
+
+```{r}
+saturation
+
+satSave
+satSave=satSave[-51,]
+
+###CALCITE!
+#normal
+ggplot()+geom_point(aes(x=satSave$Formation, y=satSave$Calcite), shape=22, fill="lightblue", color="black", size=4)+ggtitle("Calcite Saturation for Grand Canyon Formations")+ylab("Calcite Saturation")+xlab(NULL)+theme_bw()+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+
+#box plot
+ggplot(satSave, aes(Formation, Calcite))+geom_boxplot(fill="lightgreen", color="black")+geom_jitter(width = 0.3, shape=24, fill="darkgreen", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Calcite Saturation for Grand Canyon Formations")+ylab("Calcite Saturation")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+  
+
+
+```
+#Dolomite
+```{r}
+ggplot()+geom_point(aes(x=satSave$Formation, y=satSave$Dolomite), shape=22, fill="lightblue", color="black", size=4)+ggtitle("Calcite Saturation for Grand Canyon Formations")+ylab("Calcite Saturation")+xlab(NULL)+theme_bw()+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+
+#box plot
+ggplot(satSave, aes(Formation, Dolomite))+geom_boxplot(fill="lightblue", color="black")+geom_jitter(width = 0.3, shape=24, fill="darkblue", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Dolomite Saturation for Grand Canyon Formations")+ylab("Dolomite Saturation")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+```
+#Aragonite
+```{r}
+
+ggplot()+geom_point(aes(x=satSave$Formation, y=satSave$Aragonite), shape=22, fill="lightblue", color="black", size=4)+ggtitle("Calcite Saturation for Grand Canyon Formations")+ylab("Calcite Saturation")+xlab(NULL)+theme_bw()+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+
+#box plot
+ggplot(satSave, aes(Formation, Aragonite))+geom_boxplot(fill="red", color="black")+geom_jitter(width = 0.3, shape=24, fill="darkred", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Aragonite Saturation for Grand Canyon Formations")+ylab("Aragonite Saturation")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+```
+#Gibbsite
+```{r}
+satSave
+
+ggplot()+geom_point(aes(x=satSave$Formation, y=satSave$Gibbsite), shape=22, fill="lightblue", color="black", size=4)+ggtitle("Calcite Saturation for Grand Canyon Formations")+ylab("Calcite Saturation")+xlab(NULL)+theme_bw()+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+
+#box plot
+ggplot(satSave, aes(Formation, Gibbsite))+geom_boxplot(fill="orange", color="black")+geom_jitter(width = 0.3, shape=24, fill="darkorange", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Gibbsite Saturation for Grand Canyon Formations")+ylab("Gibbsite Saturation")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+
+
+```
+#Geothite
+
+```{r}
+ggplot()+geom_point(aes(x=satSave$Formation, y=satSave$Goethite), shape=22, fill="lightblue", color="black", size=4)+ggtitle("Calcite Saturation for Grand Canyon Formations")+ylab("Calcite Saturation")+xlab(NULL)+theme_bw()+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+
+#box plot
+ggplot(satSave, aes(Formation, Goethite))+geom_boxplot(fill="brown", color="black")+geom_jitter(width = 0.3, shape=24, fill="brown", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Goethite Saturation for Grand Canyon Formations")+ylab("Goethite Saturation")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+
+```
+#Halite
+```{r}
+
+satSave
+ggplot()+geom_point(aes(x=satSave$Formation, y=satSave$Halite), shape=22, fill="lightblue", color="black", size=4)+ggtitle("Calcite Saturation for Grand Canyon Formations")+ylab("Calcite Saturation")+xlab(NULL)+theme_bw()+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+
+#box plot
+ggplot(satSave, aes(Formation, Halite))+geom_boxplot(fill="purple", color="black")+geom_jitter(width = 0.3, shape=24, fill="purple", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Halite Saturation for Grand Canyon Formations")+ylab("Halite Saturation")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+
+```
+#Co2
+
+```{r}
+satSave
+satSave
+ggplot()+geom_point(aes(x=satSave$Formation, y=satSave$Siderite, shape=22, fill="lightblue", color="black", size=4)+ggtitle("Calcite Saturation for Grand Canyon Formations")+ylab("Calcite Saturation")+xlab(NULL)+theme_bw()+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+
+#box plot
+ggplot(satSave, aes(Formation, Siderite))+geom_boxplot(fill="yellow", color="black")+geom_jitter(width = 0.3, shape=24, fill="yellow", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Siderite Saturation for Grand Canyon Formations")+ylab("Siderite Saturation")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+
+```
+
+

@@ -340,6 +340,13 @@ ggsave("plot2.jpg", width = 15, height = 15, units = "in")
 
 ```
 
+#more data
+
+```{r}
+gcData
+
+ggplot(gcData, aes(x=(delta_O18_( per_mil)), y=(Delta_D_(per_mil)), color=factor(ph)))
+```
 
 
 
