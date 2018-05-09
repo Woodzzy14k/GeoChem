@@ -14,30 +14,24 @@ library(tidyverse)
 #bring in Beisner et.al data from USGS repository
 ```{r}
 gcData <- read_csv(here::here("gcData.csv"), 
-                   col_types = cols(`Alpha_ radioactivity_( picocuries/liter)` = col_double(), 
-                                    `Aluminum_(ug/L)` = col_double(), 
-                                    `Antimony_(ug/L)` = col_double(), 
-                                    `Barium_(ug/L)` = col_double(), `Beryllium_(ug/L)` = col_double(), 
-                                    `Bicarbonate_(ug/L)` = col_double(), 
-                                    `Boron_(ug/L)` = col_double(), `Cadmium_(ug/L)` = col_double(), 
-                                    `Chromium_(ug/L)` = col_double(), 
-                                    `Cobalt_(ug/L)` = col_double(), `Copper_(ug/L)` = col_double(), 
-                                    `DO_m/L` = col_double(), Date = col_character(), 
-                                    `Fluoride_(ug/L)` = col_double(), 
-                                    `Iron_(ug/L)` = col_double(), `Lead_(ug/L)` = col_double(), 
-                                    `Manganese_(ug/L)` = col_double(), 
-                                    `Molybdenum_(ug/L)` = col_double(), 
-                                    `Nickel_(ug/L)` = col_double(), `P_(mmHg)` = col_double(), 
-                                    `Q _(gpm)` = col_double(), `Radium-226_(picocuries/liter)` = col_double(), 
-                                    `Radium-228_(picocuries/liter)` = col_double(), 
-                                    `SC_uS/cm` = col_double(), `Selenium_(ug/L)` = col_double(), 
-                                    `Strontium_(ug/L)` = col_double(), 
-                                    `Thallium_(ug/L)` = col_double(), 
-                                    `Uranium-235_(picocuries/liter)` = col_double(), 
-                                    `Vanadium_(ug/L)` = col_double(), 
-                                    X55 = col_skip(), `Zinc_(ug/L)` = col_double(), 
-                                    `beta_radioactivity_(picocuries/liter)` = col_double(), 
-                                    ph = col_double()))
+    col_types = cols(`Alpha_ radioactivity` = col_double(), 
+        Aluminum = col_double(), Antimony = col_skip(), 
+        Beryllium = col_skip(), Bicarbonate = col_double(), 
+        Boron = col_skip(), Cadmium = col_skip(), 
+        Chromium = col_skip(), Cobalt = col_skip(), 
+        Copper = col_double(), Date = col_date(format = "%m/%d/%Y"), 
+        Discharge = col_double(), `Dissolved Oxygen` = col_double(), 
+        Fluoride = col_skip(), Iron = col_double(), 
+        Lead = col_double(), Manganese = col_double(), 
+        Molybdenum = col_skip(), Nickel = col_double(), 
+        P = col_skip(), `Radium-226` = col_double(), 
+        `Radium-228` = col_double(), Selenium = col_double(), 
+        Specific_conductivity = col_double(), 
+        Thallium = col_skip(), Time = col_skip(), 
+        `Uranium-235` = col_double(), Vanadium = col_skip(), 
+        Zinc = col_skip(), beta_radioactivity = col_double(), 
+        ph = col_double()))
+gcData
 #convert to data.frame
 gcData=as.data.frame(gcData)
 #fix dates
@@ -53,6 +47,7 @@ gcData=gcData[,-1]
 gcData=gcData[,-1]
 gcData=gcData[,-1]
 gcData=gcData[,-1]
+#get ride of some of the features
 
 
 gcData
@@ -348,6 +343,170 @@ gcData
 ggplot(gcData, aes(x=(delta_O18_( per_mil)), y=(Delta_D_(per_mil)), color=factor(ph)))
 ```
 
+
+#just look at minerals and what not
+```{r}
+elements <- read_csv(here::here("elements.csv"), 
+    col_types = cols(Al = col_double(), Be = col_double(), 
+        Bicarbonate = col_double(), Bo = col_double(), 
+        Cd = col_double(), Ch = col_double(), 
+        Co = col_double(), Cu = col_double(), 
+        Fe = col_double(), Fl = col_double(), 
+        Mn = col_double(), Mo = col_double(), 
+        Ni = col_double(), Pb = col_double(), 
+        Sb = col_double(), Se = col_double(), 
+        Th = col_double(), Va = col_double(), 
+        Zn = col_double()))
+
+elements=as.data.frame(elements)
+saveElements=elements
+
+elements
+
+colnames(elements)[colnames(elements)=="S(6)"] <- "Sulfate"
+```
+
+#box plot some things
+
+#carbonate
+```{r}
+ggplot(saveElements, aes(Formation, Carbonate))+geom_boxplot(fill="coral3", color="black")+geom_point(width = 0.3, shape=24, fill="coral3", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Carbonate in North Rim Grand Canyon Springs")+ylab("Carbonate (ug/L")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+
+e1=ggplot(saveElements, aes(Formation, Carbonate))+geom_boxplot(fill="coral3", color="black")+geom_point(width = 0.3, shape=24, fill="coral3", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Carbonate in North Rim Grand Canyon Springs")+ylab("Carbonate (ug/L")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+```
+#bicarbonate
+```{r}
+ggplot(saveElements, aes(Formation, Bicarbonate))+geom_boxplot(fill="lightblue", color="black")+geom_point(width = 0.3, shape=24, fill="lightblue", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Bicarbonate in North Rim Grand Canyon Springs")+ylab("Carbonate (ug/L)")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+
+e2=ggplot(saveElements, aes(Formation, Bicarbonate))+geom_boxplot(fill="lightblue", color="black")+geom_point(width = 0.3, shape=24, fill="lightblue", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Bicarbonate in North Rim Grand Canyon Springs")+ylab("Carbonate (ug/L)")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+```
+#alkalinity
+```{r}
+ggplot(saveElements, aes(Formation, Alkalinity))+geom_boxplot(fill="turquoise", color="black")+geom_point(width = 0.3, shape=24, fill="turquoise", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Alkalinity in North Rim Grand Canyon Springs")+ylab("Alkalinity (mg/L of CaCO3)")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+
+e3=ggplot(saveElements, aes(Formation, Alkalinity))+geom_boxplot(fill="turquoise", color="black")+geom_point(width = 0.3, shape=24, fill="turquoise", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Alkalinity in North Rim Grand Canyon Springs")+ylab("Alkalinity (mg/L of CaCO3)")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+```
+#silica
+```{r}
+ggplot(saveElements, aes(Formation, Silica))+geom_boxplot(fill="orchid4", color="black")+geom_point(width = 0.3, shape=24, fill="orchid4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Silica in North Rim Grand Canyon Springs")+ylab("Silica (mg/L)")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+
+e4=ggplot(saveElements, aes(Formation, Silica))+geom_boxplot(fill="orchid4", color="black")+geom_point(width = 0.3, shape=24, fill="orchid4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Silica in North Rim Grand Canyon Springs")+ylab("Silica (mg/L)")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+```
+#Ca
+```{r}
+ggplot(saveElements, aes(Formation, Ca))+geom_boxplot(fill="lavender", color="black")+geom_point(width = 0.3, shape=24, fill="lavender", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Calcium in North Rim Grand Canyon Springs")+ylab("Calcium (mg/L)")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+
+e5=ggplot(saveElements, aes(Formation, Ca))+geom_boxplot(fill="lavender", color="black")+geom_point(width = 0.3, shape=24, fill="lavender", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Calcium in North Rim Grand Canyon Springs")+ylab("Calcium (mg/L)")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+
+```
+#Na
+```{r}
+ggplot(saveElements, aes(Formation, Na))+geom_boxplot(fill="tan4", color="black")+geom_point(width = 0.3, shape=24, fill="tan4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Sodium in North Rim Grand Canyon Springs")+ylab("Sodium (mg/L)")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+
+
+e6=ggplot(saveElements, aes(Formation, Na))+geom_boxplot(fill="tan4", color="black")+geom_point(width = 0.3, shape=24, fill="tan4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Sodium in North Rim Grand Canyon Springs")+ylab("Sodium (mg/L)")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+
+```
+#k
+```{r}
+ggplot(saveElements, aes(Formation, K))+geom_boxplot(fill="indianred4", color="black")+geom_point(width = 0.3, shape=24, fill="indianred4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Potassium in North Rim Grand Canyon Springs")+ylab("Potassium (mg/L)")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+
+e7=ggplot(saveElements, aes(Formation, K))+geom_boxplot(fill="indianred4", color="black")+geom_point(width = 0.3, shape=24, fill="indianred4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Potassium in North Rim Grand Canyon Springs")+ylab("Potassium (mg/L)")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+```
+#sulfate
+```{r}
+ggplot(saveElements, aes(Formation, Sulfate))+geom_boxplot(fill="goldenrod4", color="black")+geom_point(width = 0.3, shape=24, fill="goldenrod4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Sulfate in North Rim Grand Canyon Springs")+ylab("Potassium (mg/L)")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+
+e8=ggplot(saveElements, aes(Formation, Sulfate))+geom_boxplot(fill="goldenrod4", color="black")+geom_point(width = 0.3, shape=24, fill="goldenrod4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Sulfate in North Rim Grand Canyon Springs")+ylab("Potassium (mg/L)")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+```
+#CL
+```{r}
+ggplot(saveElements, aes(Formation, Cl))+geom_boxplot(fill="brown4", color="black")+geom_point(width = 0.3, shape=24, fill="brown4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Chloride in North Rim Grand Canyon Springs")+ylab("Cholride (mg/L)")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+
+e9=ggplot(saveElements, aes(Formation, Cl))+geom_boxplot(fill="brown4", color="black")+geom_point(width = 0.3, shape=24, fill="brown4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Chloride in North Rim Grand Canyon Springs")+ylab("Cholride (mg/L)")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
+```
+#combine
+```{r}
+library(grid)
+library(gridExtra)
+
+#Carbonate and bicarbonate
+e1= ggplot_gtable(ggplot_build(e1))
+e2= ggplot_gtable(ggplot_build(e2))
+
+maxWidth = unit.pmax(e1$widths[2:3], e2$widths[2:3])
+
+e1$widths[2:3] <- maxWidth
+e2$widths[2:3] <- maxWidth
+
+
+g1=grid.arrange(e1, e2, ncol = 1 )
+
+grid.arrange(e1, e2, ncol = 1 )
+
+ggsave("carbonate and bicarbonate.jpg", g1)
+
+
+#alakalinity and silica
+e3= ggplot_gtable(ggplot_build(e3))
+e4= ggplot_gtable(ggplot_build(e4))
+
+maxWidth = unit.pmax(e3$widths[2:3], e4$widths[2:3])
+
+e3$widths[2:3] <- maxWidth
+e4$widths[2:3] <- maxWidth
+
+g2=grid.arrange(e3, e4, ncol = 1)
+grid.arrange(e3, e4, ncol = 1)
+ggsave("alkalinity and silca.jpg", g2)
+
+#NA and CL
+
+e5= ggplot_gtable(ggplot_build(e5))
+e6= ggplot_gtable(ggplot_build(e6))
+
+maxWidth = unit.pmax(e5$widths[2:3], e6$widths[2:3])
+
+e5$widths[2:3] <- maxWidth
+e6$widths[2:3] <- maxWidth
+
+g3=grid.arrange(e5, e6, ncol = 1)
+
+grid.arrange(e5, e6, ncol = 1)
+ggsave("calcium and sodium.jpg", g3)
+
+#Halite and Siderite
+e7= ggplot_gtable(ggplot_build(e7))
+e8= ggplot_gtable(ggplot_build(e8))
+
+maxWidth = unit.pmax(e7$widths[2:3], e8$widths[2:3])
+
+e7$widths[2:3] <- maxWidth
+e8$widths[2:3] <- maxWidth
+
+g4=grid.arrange(e7, e8, ncol = 1)
+
+ggsave("potassium and sulfate.jpg", g4)
+```
+```
 
 
 
