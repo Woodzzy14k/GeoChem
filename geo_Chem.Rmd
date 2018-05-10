@@ -36,12 +36,13 @@ gcData
 gcData=as.data.frame(gcData)
 #fix dates
 gcData$Date=as.Date(gcData$Date, "%m/%d/%Y")
-
+gc
 gc=gcData
 
 ```
 #make into matrix
 ```{r}
+gcData
 #get ride of characters and time
 gcData=gcData[,-1]
 gcData=gcData[,-1]
@@ -113,21 +114,19 @@ cov(PCs)
 
 #total covariance
 sum(out$d)
-#52 because it is normalized
+#37 because it is normalized
 
 #how much of each dataset variability is represented by each PC
 fracVariance=out$d/sum(out$d)
 fracVariance
 dim(fracVariance)
 
-#  [1] 2.265261e-01 1.232844e-01 9.086059e-02 8.984507e-02 5.436577e-02 5.097694e-02 4.523706e-02
-#  [8] 3.768298e-02 3.407570e-02 3.155706e-02 2.867213e-02 2.317711e-02 2.195093e-02 1.987993e-02
-# [15] 1.503582e-02 1.404793e-02 1.268982e-02 1.204202e-02 9.690446e-03 9.573916e-03 8.309471e-03
-# [22] 6.550347e-03 5.676916e-03 5.064956e-03 4.500850e-03 3.608303e-03 3.081540e-03 2.230138e-03
-# [29] 2.072954e-03 1.577602e-03 1.302185e-03 1.263198e-03 9.135126e-04 6.608740e-04 6.337546e-04
-# [36] 4.479987e-04 2.969902e-04 2.757148e-04 1.237155e-04 6.833702e-05 5.499831e-05 3.788179e-05
-# [43] 2.364047e-05 1.785524e-05 1.464408e-05 1.084642e-05 7.404622e-06 1.227778e-06 3.249740e-07
-# [50] 8.419284e-08
+# [1] 2.628852e-01 1.341056e-01 1.077107e-01 1.001165e-01 5.946611e-02 4.861243e-02 4.175812e-02
+# [8] 3.559949e-02 3.519828e-02 2.849836e-02 2.365704e-02 2.022993e-02 1.815932e-02 1.575118e-02
+# [15] 1.384587e-02 1.161237e-02 9.324430e-03 6.921497e-03 6.036384e-03 5.208488e-03 4.602453e-03
+# [22] 2.833004e-03 2.097735e-03 1.834042e-03 9.765747e-04 9.138749e-04 6.906431e-04 5.122973e-04
+# [29] 2.886193e-04 2.200671e-04 1.301186e-04 9.217780e-05 3.754151e-05 3.301240e-05 3.033725e-05
+# [36] 9.991465e-06 2.241582e-07
 
 #save for later one
 sum(save4l8er)
@@ -137,7 +136,7 @@ out$d/sum(out$d)
 ```
 ```{r}
 #make x the same as pcas...there is 50 of them!
-x1=c(1:50)
+x1=c(1:37)
 
 
 ggplot()+geom_point(aes(x=x1, y=fracVariance))+ggtitle("Fraction of Variance in Each PCA")+xlab("PCA")+ylab("Percent Variance")
@@ -145,41 +144,24 @@ ggplot()+geom_point(aes(x=x1, y=fracVariance))+ggtitle("Fraction of Variance in 
 
 ```
 ```{r}
-head(gcData)
-
-
 
 #data frame with the original data, and PCs
 df = cbind(as.data.frame(PCs),gcData[1:nrow(x),]) 
 df=cbind(df, gc$Unit)
 dim(df)
-#renamed unit
-names(df)[101]="Unit"
 
+#renamed unit
+colnames(df)[colnames(df)=="gc$Unit"] <- "Unit"
+
+#look at it
 dim(df)
 dim(df2)
 
 #and eigenvectors with names
-df2 = cbind(as.data.frame(out$v),names(gcData[,-c(5)]))
-
-
-gc=gc[,-1]
-gc=gc[,-2]
-gc=gc[,-2]
-names(gc)
-
-
 df2 = cbind(as.data.frame(out$v),names(gcData))
-df2
 
-dim(out$v)
-dim(gcData)
-
-gcData=gcData[-53,]
-gcData=gcData[-52,]
-gcData=gcData[-51,]
-
-names(df2)[51]="names"
+#rename
+colnames(df2)[colnames(df2)=="names(gcData)"] <- "names"
 
 
 #as a data.frame, it converts them to v1, v2 and v3, etc.. 
@@ -203,137 +185,10 @@ ggplot(df, aes(x = V1, y= V2))+geom_point(aes(colour=Unit),size=6)+
   geom_text(data=df2,aes(x = V1*arrowScale, y = V2*arrowScale,label=names))
   #and label those lines
 
-plot=ggplot(df, aes(x = V1, y= V2))+geom_point(aes(colour=Unit),size=6)+
-  #first just plotting points and colouring them by the cut
-  
-  geom_hline(yintercept=0)+geom_vline(xintercept=0)+
-  
-  #then we'll plot some 0 lines for our reference
-  coord_fixed(xlim=c(-3,3),ylim=c(-2,3))+
-  
-  #and set the scale
-  geom_segment(data=df2,aes(x=0,y=0,xend = V1*arrowScale, yend = V2*arrowScale))+
-  
-  #Now we'll add lines that correspond to our eigen vectors
-  geom_text(data=df2,aes(x = V1*arrowScale, y = V2*arrowScale,label=names))
-  #and label those lines
-
-ggsave("plot.jpg", width = 15, height = 15, units = "in")
+ggsave("reduced.jpg", width = 15, height = 15, units = "in")
 
 ```
-#now look at spring name
-```{r}
-#bring data into to make it less confusing
 
-gcData <- read_csv(here::here("gcData.csv"), 
-                   col_types = cols(`Alpha_ radioactivity_( picocuries/liter)` = col_double(), 
-                                    `Aluminum_(ug/L)` = col_double(), 
-                                    `Antimony_(ug/L)` = col_double(), 
-                                    `Barium_(ug/L)` = col_double(), `Beryllium_(ug/L)` = col_double(), 
-                                    `Bicarbonate_(ug/L)` = col_double(), 
-                                    `Boron_(ug/L)` = col_double(), `Cadmium_(ug/L)` = col_double(), 
-                                    `Chromium_(ug/L)` = col_double(), 
-                                    `Cobalt_(ug/L)` = col_double(), `Copper_(ug/L)` = col_double(), 
-                                    `DO_m/L` = col_double(), Date = col_character(), 
-                                    `Fluoride_(ug/L)` = col_double(), 
-                                    `Iron_(ug/L)` = col_double(), `Lead_(ug/L)` = col_double(), 
-                                    `Manganese_(ug/L)` = col_double(), 
-                                    `Molybdenum_(ug/L)` = col_double(), 
-                                    `Nickel_(ug/L)` = col_double(), `P_(mmHg)` = col_double(), 
-                                    `Q _(gpm)` = col_double(), `Radium-226_(picocuries/liter)` = col_double(), 
-                                    `Radium-228_(picocuries/liter)` = col_double(), 
-                                    `SC_uS/cm` = col_double(), `Selenium_(ug/L)` = col_double(), 
-                                    `Strontium_(ug/L)` = col_double(), 
-                                    `Thallium_(ug/L)` = col_double(), 
-                                    `Uranium-235_(picocuries/liter)` = col_double(), 
-                                    `Vanadium_(ug/L)` = col_double(), 
-                                    X55 = col_skip(), `Zinc_(ug/L)` = col_double(), 
-                                    `beta_radioactivity_(picocuries/liter)` = col_double(), 
-                                    ph = col_double()))
-
-#convert to data.frame
-gcData=as.data.frame(gcData)
-#fix dates
-gcData$Date=as.Date(gcData$Date, "%m/%d/%Y")
-
-gc2=gcData
-
-
-gcData=gcData[,-1]
-gcData=gcData[,-1]
-gcData=gcData[,-1]
-gcData=gcData[,-1]
-
-
-#data frame with the original data, and PCs
-df = cbind(as.data.frame(PCs),gcData[1:nrow(x),]) 
-df=cbind(df, gc2$Spring)
-dim(df)
-#renamed unit
-names(df)[101]="Spring"
-
-dim(df)
-dim(df2)
-
-#and eigenvectors with names
-gc=gc[,-1]
-gc=gc[,-2]
-gc=gc[,-2]
-names(gc)
-
-
-df2 = cbind(as.data.frame(out$v),names(gcData))
-
-dim(out$v)
-dim(gcData)
-
-gcData=gcData[-53,]
-gcData=gcData[-52,]
-gcData=gcData[-51,]
-
-names(df2)[51]="names"
-
-
-#as a data.frame, it converts them to v1, v2 and v3, etc.. 
-
-#and make an awesome plot, we're going to compare PC1 and PC2
-
-arrowScale=5
-
-ggplot(df, aes(x = V1, y= V2))+geom_point(aes(colour=Spring),size=6)+
-  #first just plotting points and colouring them by the cut
-  
-  geom_hline(yintercept=0)+geom_vline(xintercept=0)+
-  
-  #then we'll plot some 0 lines for our reference
-  coord_fixed(xlim=c(-3,3),ylim=c(-2,3))+
-  
-  #and set the scale
-  geom_segment(data=df2,aes(x=0,y=0,xend = V1*arrowScale, yend = V2*arrowScale))+
-  
-  #Now we'll add lines that correspond to our eigen vectors
-  geom_text(data=df2,aes(x = V1*arrowScale, y = V2*arrowScale,label=names))
-  #and label those lines
-
-plot2=ggplot(df, aes(x = V1, y= V2))+geom_point(aes(colour=Spring),size=6)+
-  #first just plotting points and colouring them by the cut
-  
-  geom_hline(yintercept=0)+geom_vline(xintercept=0)+
-  
-  #then we'll plot some 0 lines for our reference
-  coord_fixed(xlim=c(-3,3),ylim=c(-2,3))+
-  
-  #and set the scale
-  geom_segment(data=df2,aes(x=0,y=0,xend = V1*arrowScale, yend = V2*arrowScale))+
-  
-  #Now we'll add lines that correspond to our eigen vectors
-  geom_text(data=df2,aes(x = V1*arrowScale, y = V2*arrowScale,label=names))
-  #and label those lines
-
-ggsave("plot2.jpg", width = 15, height = 15, units = "in")
-
-
-```
 
 #more data
 
@@ -373,15 +228,15 @@ colnames(elements)[colnames(elements)=="S(6)"] <- "Sulfate"
 ggplot(saveElements, aes(Formation, Carbonate))+geom_boxplot(fill="coral3", color="black")+geom_point(width = 0.3, shape=24, fill="coral3", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Carbonate in North Rim Grand Canyon Springs")+ylab("Carbonate (ug/L")+theme_bw()+
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 
-e1=ggplot(saveElements, aes(Formation, Carbonate))+geom_boxplot(fill="coral3", color="black")+geom_point(width = 0.3, shape=24, fill="coral3", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Carbonate in North Rim Grand Canyon Springs")+ylab("Carbonate (ug/L")+theme_bw()+
+e1=ggplot(saveElements, aes(Formation, Carbonate))+geom_boxplot(fill="coral3", color="black")+geom_point(width = 0.3, shape=24, fill="coral3", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Carbonate in North Rim Springs")+ylab("Carbonate (mg/L")+theme_bw()+
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 ```
 #bicarbonate
 ```{r}
-ggplot(saveElements, aes(Formation, Bicarbonate))+geom_boxplot(fill="lightblue", color="black")+geom_point(width = 0.3, shape=24, fill="lightblue", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Bicarbonate in North Rim Grand Canyon Springs")+ylab("Carbonate (ug/L)")+theme_bw()+
+ggplot(saveElements, aes(Formation, Bicarbonate))+geom_boxplot(fill="lightblue", color="black")+geom_point(width = 0.3, shape=24, fill="lightblue", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Bicarbonate in North Rim Grand Canyon Springs")+ylab("Bicarbonate (ug/L)")+theme_bw()+
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 
-e2=ggplot(saveElements, aes(Formation, Bicarbonate))+geom_boxplot(fill="lightblue", color="black")+geom_point(width = 0.3, shape=24, fill="lightblue", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Bicarbonate in North Rim Grand Canyon Springs")+ylab("Carbonate (ug/L)")+theme_bw()+
+e2=ggplot(saveElements, aes(Formation, Bicarbonate))+geom_boxplot(fill="lightblue", color="black")+geom_point(width = 0.3, shape=24, fill="lightblue", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Bicarbonate in North Rim Springs")+ylab("Bicarbonate (mg/L)")+theme_bw()+
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 ```
 #alkalinity
@@ -389,7 +244,7 @@ theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.
 ggplot(saveElements, aes(Formation, Alkalinity))+geom_boxplot(fill="turquoise", color="black")+geom_point(width = 0.3, shape=24, fill="turquoise", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Alkalinity in North Rim Grand Canyon Springs")+ylab("Alkalinity (mg/L of CaCO3)")+theme_bw()+
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 
-e3=ggplot(saveElements, aes(Formation, Alkalinity))+geom_boxplot(fill="turquoise", color="black")+geom_point(width = 0.3, shape=24, fill="turquoise", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Alkalinity in North Rim Grand Canyon Springs")+ylab("Alkalinity (mg/L of CaCO3)")+theme_bw()+
+e3=ggplot(saveElements, aes(Formation, Alkalinity))+geom_boxplot(fill="turquoise", color="black")+geom_point(width = 0.3, shape=24, fill="turquoise", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Alkalinity in North Rim Springs")+ylab("Alkalinity (mg/L of CaCO3)")+theme_bw()+
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 ```
 #silica
@@ -397,7 +252,7 @@ theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.
 ggplot(saveElements, aes(Formation, Silica))+geom_boxplot(fill="orchid4", color="black")+geom_point(width = 0.3, shape=24, fill="orchid4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Silica in North Rim Grand Canyon Springs")+ylab("Silica (mg/L)")+theme_bw()+
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 
-e4=ggplot(saveElements, aes(Formation, Silica))+geom_boxplot(fill="orchid4", color="black")+geom_point(width = 0.3, shape=24, fill="orchid4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Silica in North Rim Grand Canyon Springs")+ylab("Silica (mg/L)")+theme_bw()+
+e4=ggplot(saveElements, aes(Formation, Silica))+geom_boxplot(fill="orchid4", color="black")+geom_point(width = 0.3, shape=24, fill="orchid4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Silica in North Rim Springs")+ylab("Silica (mg/L)")+theme_bw()+
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 ```
 #Ca
@@ -405,7 +260,7 @@ theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.
 ggplot(saveElements, aes(Formation, Ca))+geom_boxplot(fill="lavender", color="black")+geom_point(width = 0.3, shape=24, fill="lavender", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Calcium in North Rim Grand Canyon Springs")+ylab("Calcium (mg/L)")+theme_bw()+
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 
-e5=ggplot(saveElements, aes(Formation, Ca))+geom_boxplot(fill="lavender", color="black")+geom_point(width = 0.3, shape=24, fill="lavender", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Calcium in North Rim Grand Canyon Springs")+ylab("Calcium (mg/L)")+theme_bw()+
+e5=ggplot(saveElements, aes(Formation, Ca))+geom_boxplot(fill="lavender", color="black")+geom_point(width = 0.3, shape=24, fill="lavender", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Calcium in North Rim Springs")+ylab("Calcium (mg/L)")+theme_bw()+
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 
 ```
@@ -415,7 +270,7 @@ ggplot(saveElements, aes(Formation, Na))+geom_boxplot(fill="tan4", color="black"
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 
 
-e6=ggplot(saveElements, aes(Formation, Na))+geom_boxplot(fill="tan4", color="black")+geom_point(width = 0.3, shape=24, fill="tan4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Sodium in North Rim Grand Canyon Springs")+ylab("Sodium (mg/L)")+theme_bw()+
+e6=ggplot(saveElements, aes(Formation, Na))+geom_boxplot(fill="tan4", color="black")+geom_point(width = 0.3, shape=24, fill="tan4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Sodium in North Rim Springs")+ylab("Sodium (mg/L)")+theme_bw()+
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 
 ```
@@ -424,15 +279,15 @@ theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.
 ggplot(saveElements, aes(Formation, K))+geom_boxplot(fill="indianred4", color="black")+geom_point(width = 0.3, shape=24, fill="indianred4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Potassium in North Rim Grand Canyon Springs")+ylab("Potassium (mg/L)")+theme_bw()+
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 
-e7=ggplot(saveElements, aes(Formation, K))+geom_boxplot(fill="indianred4", color="black")+geom_point(width = 0.3, shape=24, fill="indianred4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Potassium in North Rim Grand Canyon Springs")+ylab("Potassium (mg/L)")+theme_bw()+
+e7=ggplot(saveElements, aes(Formation, K))+geom_boxplot(fill="indianred4", color="black")+geom_point(width = 0.3, shape=24, fill="indianred4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Potassium in North Rim Springs")+ylab("Potassium (mg/L)")+theme_bw()+
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 ```
 #sulfate
 ```{r}
-ggplot(saveElements, aes(Formation, Sulfate))+geom_boxplot(fill="goldenrod4", color="black")+geom_point(width = 0.3, shape=24, fill="goldenrod4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Sulfate in North Rim Grand Canyon Springs")+ylab("Potassium (mg/L)")+theme_bw()+
+ggplot(saveElements, aes(Formation, Sulfate))+geom_boxplot(fill="goldenrod4", color="black")+geom_point(width = 0.3, shape=24, fill="goldenrod4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Sulfate in North Rim Grand Canyon Springs")+ylab("Sulfate (mg/L)")+theme_bw()+
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 
-e8=ggplot(saveElements, aes(Formation, Sulfate))+geom_boxplot(fill="goldenrod4", color="black")+geom_point(width = 0.3, shape=24, fill="goldenrod4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Sulfate in North Rim Grand Canyon Springs")+ylab("Potassium (mg/L)")+theme_bw()+
+e8=ggplot(saveElements, aes(Formation, Sulfate))+geom_boxplot(fill="goldenrod4", color="black")+geom_point(width = 0.3, shape=24, fill="goldenrod4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Sulfate in North Rim Springs")+ylab("Sulfate (mg/L)")+theme_bw()+
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 ```
 #CL
@@ -440,7 +295,7 @@ theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.
 ggplot(saveElements, aes(Formation, Cl))+geom_boxplot(fill="brown4", color="black")+geom_point(width = 0.3, shape=24, fill="brown4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Chloride in North Rim Grand Canyon Springs")+ylab("Cholride (mg/L)")+theme_bw()+
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 
-e9=ggplot(saveElements, aes(Formation, Cl))+geom_boxplot(fill="brown4", color="black")+geom_point(width = 0.3, shape=24, fill="brown4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Chloride in North Rim Grand Canyon Springs")+ylab("Cholride (mg/L)")+theme_bw()+
+e9=ggplot(saveElements, aes(Formation, Cl))+geom_boxplot(fill="brown4", color="black")+geom_point(width = 0.3, shape=24, fill="brown4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Chloride in North Rim Springs")+ylab("Cholride (mg/L)")+theme_bw()+
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 ```
 #combine
@@ -506,7 +361,209 @@ g4=grid.arrange(e7, e8, ncol = 1)
 
 ggsave("potassium and sulfate.jpg", g4)
 ```
+
+#isotopes
+```{r}
+gcData
+
+ggplot(gcData, aes(delta_O18, Delta_D))+geom_point(aes(colour = factor(Unit)), shape=17, size = 4)+labs(title = "North Rim Delta D and Delta O18\n", x = "Delta O18 (parts per mil)", y = "Delta D (parts per mil)", color = "Legend\n") + geom_abline(aes(intercept=10, slope=8),color="Black",alpha=1, size=1)+theme_bw()+
+theme(axis.text.x=element_text(size=14), axis.title.y=element_text(size=16),axis.text.y=element_text(size=14),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+
+ggsave("north Rim delta d and delta 018.jpg")
 ```
 
+
+#just elements PCA
+```{r}
+
+elements
+
+saveElements=elements
+
+elements=elements[,-1]
+elements=elements[,-1]
+
+geoMatrix=matrix(as.numeric(unlist(elements)), nrow=nrow(elements))
+
+
+
+
+#replace all non-finite values with 0
+geoMatrix[!rowSums(!is.finite(geoMatrix)),]
+geoMatrix[!is.finite(geoMatrix)] <- 0
+#check
+
+
+
+#Now we want to calculate the covariance matrix. First need to make a new version of this matrix such that each column has Center the data so that the mean of each column is 0 scale() is a useful function to do this, but check afterward to make sure you'be done it right
+
+#subract that mean and center it on 0
+x=scale(geoMatrix, center=TRUE, scale=TRUE)
+
+x[!rowSums(!is.finite(x)),]
+x[!is.finite(x)] <- 0
+
+
+# 1e. OK - now use linear algebra to calculate your covariance matrix. Are the values consistent with the plots in 1a?
+
+#covariance matrix
+coGeo=(t(x)%*%x/(nrow(x)-1))
+head(coGeo)
+
+#correlation is standard covariance!
+head(cor(geoMatrix))
+
+
+# 1f. Now we want to try to find a matrix ("P") (our EOFs) that we can multiply by our original matrix to turn it into orthogonal indices (our PCs).
+
+# To do so, use svd() on your covariance matrix.
+
+
+
+
+
+out=svd(coGeo)
+
+names(out)
+
+save4l8er=diag(out$d)
+
+sum(save4l8er)
+
+print(save4l8er)
+
+#project data onto new axes
+PCs=(x%*%out$v)
+#14 of them
+dim(PCs)
+cov(PCs)
+
+
+#total covariance
+sum(out$d)
+#32 because it is normalized
+
+#how much of each dataset variability is represented by each PC
+fracVariance=out$d/sum(out$d)
+fracVariance
+dim(fracVariance)
+
+# [1] 2.807959e-01 1.457717e-01 1.176161e-01 7.466301e-02 5.826111e-02 5.423565e-02 4.250754e-02
+# [8] 3.664666e-02 3.209516e-02 3.022322e-02 2.452339e-02 1.781210e-02 1.550155e-02 1.479520e-02
+# [15] 1.312381e-02 1.168339e-02 8.405970e-03 7.762135e-03 3.213042e-03 3.124444e-03 2.589538e-03
+# [22] 1.426360e-03 1.285880e-03 6.931534e-04 4.335143e-04 3.141153e-04 2.271448e-04 1.169168e-04
+# [29] 9.110104e-05 4.806718e-05 1.281611e-05 3.289585e-07
+
+#save for later one
+sum(save4l8er)
+#50
+out$d/sum(out$d)
+
+```
+```{r}
+#make x the same as pcas...there is 50 of them!
+x1=c(1:32)
+
+
+ggplot()+geom_point(aes(x=x1, y=fracVariance))+ggtitle("Fraction of Variance in Each PCA")+xlab("PCA")+ylab("Percent Variance")
+```
+
+#the good stuff
+```{r}
+head(gcData)
+
+
+
+#data frame with the original data, and PCs
+df = cbind(as.data.frame(PCs),elements[1:nrow(x),]) 
+df=cbind(df, saveElements$Formation)
+dim(df)
+#53x65
+#renamed unit
+colnames(df)[colnames(df)=="saveElements$Formation"] <- "Unit"
+
+dim(df)
+dim(df2)
+
+#and eigenvectors with names
+df2 = cbind(as.data.frame(out$v),names(elements))
+
+colnames(df2)[colnames(df2)=="names(elements)"] <- "names"
+
+
+
+
+
+#as a data.frame, it converts them to v1, v2 and v3, etc.. 
+
+#and make an awesome plot, we're going to compare PC1 and PC2
+
+
+
+ggplot(df, aes(x = V1, y= V2))+geom_point(aes(colour=Unit),size=6)+
+  #first just plotting points and colouring them by the cut
+  
+  geom_hline(yintercept=0)+geom_vline(xintercept=0)+
+  
+  #then we'll plot some 0 lines for our reference
+  coord_fixed(xlim=c(-3,3),ylim=c(-2,3))+
+  
+  #and set the scale
+  geom_segment(data=df2,aes(x=0,y=0,xend = V1*arrowScale, yend = V2*arrowScale))+
+  
+  #Now we'll add lines that correspond to our eigen vectors
+  geom_text(data=df2,aes(x = V1*arrowScale, y = V2*arrowScale,label=names))
+  #and label those lines
+
+plot=ggplot(df, aes(x = V1, y= V2))+geom_point(aes(colour=Unit),size=6)+
+  #first just plotting points and colouring them by the cut
+  
+  geom_hline(yintercept=0)+geom_vline(xintercept=0)+
+  
+  #then we'll plot some 0 lines for our reference
+  coord_fixed(xlim=c(-3,3),ylim=c(-2,3))+
+  
+  #and set the scale
+  geom_segment(data=df2,aes(x=0,y=0,xend = V1*arrowScale, yend = V2*arrowScale))+
+  
+  #Now we'll add lines that correspond to our eigen vectors
+  geom_text(data=df2,aes(x = V1*arrowScale, y = V2*arrowScale,label=names))
+  #and label those lines
+
+ggsave("elements.jpg", width = 15, height = 15, units = "in")
+
+```
+#look at Isotopes again!
+```{r}
+gcData
+gcData
+
+
+ggplot(data=subset(gcData, !is.na(gcData)), aes(delta_O18, Delta_D))+geom_point(aes(colour = factor(Discharge)), shape=17, size = 4)+labs(title = "North Rim Delta D and Delta O18\n", x = "Delta O18 (parts per mil)", y = "Delta D (parts per mil)", color = "Discharge (gpm)\n") + geom_abline(aes(intercept=10, slope=8),color="Black",alpha=1, size=1)+theme_bw()+
+theme(axis.text.x=element_text(size=14), axis.title.y=element_text(size=16),axis.text.y=element_text(size=14),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+
+```
+#more isotopes
+```{r}
+ggplot(gc, aes(delta_O18, Delta_D))+geom_point(aes(colour = factor(temp)), shape=17, size = 4)+labs(title = "North Rim Delta D and Delta O18\n", x = "Delta O18 (parts per mil)", y = "Delta D (parts per mil)", color = "Temperature (C)\n") + geom_abline(aes(intercept=10, slope=8),color="Black",alpha=1, size=1)+theme_bw()+
+theme(axis.text.x=element_text(size=14), axis.title.y=element_text(size=16),axis.text.y=element_text(size=14),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+
+ggsave("isotope with discharge.jpg", width = 15, height = 15, units = "in")
+
+```
+#discharge and temp
+
+```{r}
+gc
+ggplot(gc, aes(Discharge, temp))+geom_point(aes(colour = factor(Unit)), shape=17, size = 4)+scale_x_log10()+labs(title = "North Rim Discharge vs Temperature\n", x = "Discharge (gpm) ", y = "Temperature (C)", color = "Geologic Unit\n of Discharge")+theme_bw()+
+theme(axis.text.x=element_text(size=14), axis.title.y=element_text(size=16),axis.text.y=element_text(size=14),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+
+ggsave("isotope with temperature.jpg", width = 15, height = 15, units = "in")
+
+```
+#more
+```{r}
+
+```
 
 
