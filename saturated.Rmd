@@ -442,6 +442,17 @@ theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.
 bp9=ggplot(satSave, aes(Formation, O2))+geom_boxplot(fill="royalblue4", color="black")+geom_point(width = 0.3, shape=24, fill="royalblue4", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("O2 (g) Saturation for North Rim Springs")+ylab("O2 Saturation")+theme_bw()+
 theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=19, face="bold", color="black"))
 ```
+#gypsum
+
+```{r}
+
+ggplot(satSave, aes(Formation, Gypsum))+geom_boxplot(fill="red2", color="black")+geom_point(width = 0.3, shape=24, fill="red2", color="black", size=2)+theme_classic()+xlab(NULL)+ggtitle("Gypsum Saturation for North Rim Springs")+ylab("Gypsum Saturation")+theme_bw()+
+theme(axis.title.y=element_text(size=15),axis.text.y=element_text(size=12),axis.title.x=element_text(size=16), plot.title=element_text(size=17, face="bold", color="black"))
+
+ggsave("gypsum saturation.jpg")
+
+```
+
 #combine the graphs
 ```{r}
 #gridsssss
@@ -502,6 +513,90 @@ bp9$widths[2:3] <- maxWidth
 ga4=grid.arrange(bp7, bp9, ncol = 1)
 
 ggsave("co2 and 02.jpg", ga4)
+```
+#Correlations
+
+```{r}
+library(tidyverse)
+library(corrplot)
+satCor <- read_csv("~/GitHub/EEDA18/geo_Chem/realSat.csv", 
+    col_types = cols(Formation = col_skip(), 
+        Season = col_skip(), Spring = col_skip()))
+
+satCor=satCor[-1]
+satCor=as.data.frame(satCor)
+
+satCor=na.remove(satCor)
+
+m=cor(satCor,use="pairwise.complete.obs")
+corrplot(m, method="number")
+
+class(mtcars)
+```
+#saturation with time
+
+```{r}
+timeSat <- read_csv("~/GitHub/EEDA18/geo_Chem/realSat.csv", 
+    col_types = cols(Date = col_date(format = "%m/%d/%Y"), 
+        Season = col_skip(), X3 = col_skip()))
+timeSat=timeSat[-53,]
+timeSat
+
+ggplot(timeSat)+geom_jitter(aes(Date, Calcite, shape=factor(Formation), color=factor(Formation)), size=3)+geom_smooth(aes(Date, Calcite), color="black")+ ggtitle("Calcite Saturation with Time")+xlab(NULL) +ylab("Calcite Saturation Index")+labs(color="Unit of Discharge", shape="Unit of Discharge")+theme_bw()+
+theme(axis.text.x=element_text(size=14), axis.title.y=element_text(size=16),axis.text.y=element_text(size=14),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+
+
+
+
+geom_jitter(aes(Date, Dolomite, shape=factor(Formation), color=factor(Formation)), size=3)+geom_jitter(aes(Date, Aragonite, shape=factor(Formation), color=factor(Formation)), size=3)+geom_jitter(aes(Date, Anhydrite, shape=factor(Formation), color=factor(Formation)), size=3)+
+
+```
+#Calcite
+```{r}
+ggplot(timeSat)+geom_jitter(aes(Date, Calcite, shape=factor(Formation), color=factor(Formation)), size=3)+geom_smooth(aes(Date, Calcite), color="black")+ ggtitle("Calcite Saturation with Time")+xlab(NULL) +ylab("Calcite Saturation Index")+labs(color="Unit of Discharge", shape="Unit of Discharge")+theme_bw()+
+theme(axis.text.x=element_text(size=14), axis.title.y=element_text(size=16),axis.text.y=element_text(size=14),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+
+ggsave("calcite with time.jpg")
+```
+#aragonite
+```{r}
+ggplot(timeSat)+geom_jitter(aes(Date, Aragonite, shape=factor(Formation), color=factor(Formation)), size=3)+geom_smooth(aes(Date, Aragonite), color="black")+ ggtitle("Aragonite Saturation with Time")+xlab(NULL) +ylab("Aragonite Saturation Index")+labs(color="Unit of Discharge", shape="Unit of Discharge")+theme_bw()+
+theme(axis.text.x=element_text(size=14), axis.title.y=element_text(size=16),axis.text.y=element_text(size=14),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+
+ggsave("aragonite with time.jpg")
+
+```
+#dolomite
+```{r}
+ggplot(timeSat)+geom_jitter(aes(Date, Dolomite, shape=factor(Formation), color=factor(Formation)), size=3)+geom_smooth(aes(Date, Dolomite), color="black")+ ggtitle("Dolomite Saturation with Time")+xlab(NULL) +ylab("Dolomite Saturation Index")+labs(color="Unit of Discharge", shape="Unit of Discharge")+theme_bw()+
+theme(axis.text.x=element_text(size=14), axis.title.y=element_text(size=16),axis.text.y=element_text(size=14),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+
+ggsave("dolomite with time.jpg")
+
+```
+#anhydrite
+```{r}
+ggplot(timeSat)+geom_jitter(aes(Date, Anhydrite, shape=factor(Formation), color=factor(Formation)), size=3)+geom_smooth(aes(Date, Anhydrite), color="black")+ ggtitle("Anhydrite Saturation with Time")+xlab(NULL) +ylab("Anhydrite Saturation Index")+labs(color="Unit of Discharge", shape="Unit of Discharge")+theme_bw()+
+theme(axis.text.x=element_text(size=14), axis.title.y=element_text(size=16),axis.text.y=element_text(size=14),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+
+ggsave("anhydrite with time.jpg")
+
+```
+#halite
+```{r}
+ggplot(timeSat)+geom_jitter(aes(Date, Halite, shape=factor(Formation), color=factor(Formation)), size=3)+geom_smooth(aes(Date, Halite), color="black")+ ggtitle("Halite Saturation with Time")+xlab(NULL) +ylab("Halite Saturation Index")+labs(color="Unit of Discharge", shape="Unit of Discharge")+theme_bw()+
+theme(axis.text.x=element_text(size=14), axis.title.y=element_text(size=16),axis.text.y=element_text(size=14),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+
+ggsave("anyhydrite with time.jpg")
+
+```
+#gypsum
+```{r}
+ggplot(timeSat)+geom_jitter(aes(Date, Gypsum, shape=factor(Formation), color=factor(Formation)), size=3)+geom_smooth(aes(Date, Gypsum), color="black")+ ggtitle("Gypsum Saturation with Time")+xlab(NULL) +ylab("Gypsum Saturation Index")+labs(color="Unit of Discharge", shape="Unit of Discharge")+theme_bw()+
+theme(axis.text.x=element_text(size=14), axis.title.y=element_text(size=16),axis.text.y=element_text(size=14),axis.title.x=element_text(size=16), plot.title=element_text(size=20, face="bold", color="black"))
+?geom_smooth()
+
+ggsave("gypsum with time.jpg")
 ```
 
 
